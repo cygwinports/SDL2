@@ -1,0 +1,58 @@
+NAME="SDL2"
+VERSION=2.0.0
+RELEASE=1
+CATEGORY="Libs"
+SUMMARY="Simple DirectMedia Layer core library"
+DESCRIPTION="This is the Simple DirectMedia Layer, a general API that provides
+low level access to audio, keyboard, mouse, joystick, 3D hardware via OpenGL,
+and 2D framebuffer across multiple platforms."
+HOMEPAGE="http://www.libsdl.org/"
+SRC_URI="http://www.libsdl.org/release/SDL2-${VERSION}.tar.gz"
+PATCH_URI="
+	2.0.0-cygwin-dlopen.patch
+	2.0.0-cygwin-posix.patch
+	2.0.0-disable-static.patch
+"
+
+PKG_NAMES="libSDL2_2.0_0 libSDL2-devel"
+libSDL2_2_0_0_REQUIRES="libdbus1_3 libGL1" # libaudio2 libpulse-simple0
+libSDL2_2_0_0_CONTENTS="usr/bin/cygSDL2-2-0-0.dll usr/share/doc/"
+libSDL2_devel_CONTENTS="usr/bin/sdl2-config usr/include/ usr/lib/ usr/share/aclocal/"
+
+DISTCLEANFILES="acinclude/l*.m4"
+DIFF_EXCLUDES="SDL_config.h"
+
+ACLOCAL_FLAGS="-I acinclude"
+NO_AUTOHEADER=1
+CYGCONF_ARGS="
+	--enable-pthreads
+	--enable-pthread-sem
+	--enable-sdl-dlopen
+
+	--disable-arts
+	--disable-arts-shared
+	--disable-esd
+	--disable-esd-shared
+	--enable-nas
+	--enable-nas-shared
+	--enable-oss
+	--enable-pulseaudio
+	--enable-pulseaudio-shared
+
+	--enable-video-dummy
+	--enable-video-opengl
+	--disable-video-opengles
+	--enable-video-x11
+	--enable-video-x11-scrnsaver
+	--enable-video-x11-xcursor
+	--enable-video-x11-xinerama
+	--enable-video-x11-xinput
+	--enable-video-x11-xrandr
+	--enable-video-x11-xshape
+	--disable-video-x11-vm
+	--disable-x11-shared
+"
+
+DOCS="README-SDL.txt README-porting.txt"
+
+KEEP_LA_FILES="none"

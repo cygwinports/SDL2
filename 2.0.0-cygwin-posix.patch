@@ -1,0 +1,99 @@
+--- origsrc/SDL2-2.0.0/configure.in	2013-08-11 21:57:54.000000000 -0500
++++ src/SDL2-2.0.0/configure.in	2013-08-13 14:10:06.841632700 -0500
+@@ -79,29 +79,6 @@ elif test -d .hg; then
+ fi
+ BASE_CFLAGS=""
+ BASE_LDFLAGS=""
+-case "$host" in
+-    *-*-cygwin*)
+-        # We build SDL on cygwin without the UNIX emulation layer
+-        save_CFLAGS="$CFLAGS"
+-        have_no_cygwin=no
+-        AC_MSG_CHECKING(for GCC -mno-cygwin option)
+-        CFLAGS="$save_CFLAGS -mno-cygwin"
+-
+-        AC_TRY_COMPILE([
+-        ],[
+-        ],[
+-        have_no_cygwin=yes
+-        ])
+-        AC_MSG_RESULT($have_no_cygwin)
+-        CFLAGS="$save_CFLAGS"
+-
+-        if test x$have_no_cygwin = xyes; then
+-            BASE_CFLAGS="-mno-cygwin"
+-            BASE_LDFLAGS="-mno-cygwin"
+-        fi
+-        BASE_CFLAGS="$BASE_CFLAGS -I/usr/include/mingw"
+-        ;;
+-esac
+ # Uncomment the following line if you want to force SDL and applications
+ # built with it to be compiled for a particular architecture.
+ #AX_GCC_ARCHFLAG([no], [BASE_CFLAGS="$BASE_CFLAGS $ax_cv_gcc_archflag]")
+@@ -237,7 +214,7 @@ if test x$enable_libc = xyes; then
+ 
+     dnl Checks for library functions.
+     case "$host" in
+-    *-*-cygwin* | *-*-mingw32*)
++    *-*-mingw32*)
+         ;;
+     *)
+         AC_FUNC_ALLOCA
+@@ -2331,7 +2310,7 @@ AC_HELP_STRING([--enable-rpath], [use an
+ 
+ dnl Set up the configuration based on the host platform!
+ case "$host" in
+-    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
++    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-cygwin*)
+         case "$host" in
+             *-*-linux*)         ARCH=linux ;;
+             *-*-uclinux*)       ARCH=linux ;;
+@@ -2349,6 +2328,7 @@ case "$host" in
+             *-*-hpux*)          ARCH=hpux ;;
+             *-*-aix*)           ARCH=aix ;;
+             *-*-minix*)         ARCH=minix ;;
++            *-*-cygwin*)        ARCH=cygwin ;;
+         esac
+         CheckVisibilityHidden
+         CheckDummyVideo
+@@ -2435,7 +2415,7 @@ case "$host" in
+             have_timers=yes
+         fi
+         ;;
+-    *-*-cygwin* | *-*-mingw32*)
++    *-*-mingw32*)
+         ARCH=win32
+         if test "$build" != "$host"; then # cross-compiling
+             # Default cross-compile location
+--- origsrc/SDL2-2.0.0/include/SDL_platform.h	2013-08-11 21:57:54.000000000 -0500
++++ src/SDL2-2.0.0/include/SDL_platform.h	2013-08-13 14:16:10.963459300 -0500
+@@ -120,7 +120,11 @@
+ #undef __SOLARIS__
+ #define __SOLARIS__ 1
+ #endif
+-#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
++#if defined(__CYGWIN__)
++#undef __CYGWIN__
++#define __CYGWIN__ 1
++#endif
++#if defined(WIN32) || defined(_WIN32)
+ #undef __WIN32__
+ #define __WIN32__   1
+ #endif
+--- origsrc/SDL2-2.0.0/test/configure.in	2013-08-11 21:57:54.000000000 -0500
++++ src/SDL2-2.0.0/test/configure.in	2013-08-13 12:17:41.186231200 -0500
+@@ -22,7 +22,13 @@ ISMACOSX="false"
+ 
+ dnl Figure out which math library to use
+ case "$host" in
+-    *-*-cygwin* | *-*-mingw32*)
++    *-*-cygwin*)
++        ISUNIX="true"
++        EXE=".exe"
++        MATHLIB=""
++        SYS_GL_LIBS="-lGL"
++        ;;
++    *-*-mingw32*)
+         ISWINDOWS="true"
+         EXE=".exe"
+         MATHLIB=""
