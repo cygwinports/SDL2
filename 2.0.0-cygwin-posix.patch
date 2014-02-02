@@ -77,8 +77,8 @@
 +#define __CYGWIN__ 1
 +#endif
 +#if defined(WIN32) || defined(_WIN32)
- #undef __WIN32__
- #define __WIN32__   1
+ #undef __WINDOWS__
+ #define __WINDOWS__   1
  #endif
 --- origsrc/SDL2-2.0.0/test/configure.in	2013-08-11 21:57:54.000000000 -0500
 +++ src/SDL2-2.0.0/test/configure.in	2013-08-13 12:17:41.186231200 -0500

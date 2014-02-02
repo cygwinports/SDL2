@@ -1,5 +1,5 @@
 NAME="SDL2"
-VERSION=2.0.0
+VERSION=2.0.1
 RELEASE=1
 CATEGORY="Libs"
 SUMMARY="Simple DirectMedia Layer core library"
