@@ -1,5 +1,5 @@
 NAME="SDL2"
-VERSION=2.0.1
+VERSION=2.0.3
 RELEASE=1
 CATEGORY="Libs"
 SUMMARY="Simple DirectMedia Layer core library"
@@ -9,13 +9,13 @@ and 2D framebuffer across multiple platforms."
 HOMEPAGE="http://www.libsdl.org/"
 SRC_URI="http://www.libsdl.org/release/SDL2-${VERSION}.tar.gz"
 PATCH_URI="
-	2.0.0-cygwin-dlopen.patch
-	2.0.0-cygwin-posix.patch
+	2.0.3-cygwin-posix.patch
+	2.0.3-cygwin-dlopen.patch
 	2.0.0-disable-static.patch
 "
 
 PKG_NAMES="libSDL2_2.0_0 libSDL2-devel"
-libSDL2_2_0_0_REQUIRES="libdbus1_3 libGL1" # libaudio2 libpulse-simple0
+libSDL2_2_0_0_REQUIRES="libdbus1_3 libGL1 libX11_6 libXcursor1 libXext6 libXi6 libXinerama1 libXrandr2 libXss1" # libaudio2 libpulse-simple0
 libSDL2_2_0_0_CONTENTS="usr/bin/cygSDL2-2-0-0.dll usr/share/doc/"
 libSDL2_devel_CONTENTS="usr/bin/sdl2-config usr/include/ usr/lib/ usr/share/aclocal/"
 
@@ -31,17 +31,17 @@ CYGCONF_ARGS="
 
 	--disable-arts
 	--disable-arts-shared
-	--disable-esd
-	--disable-esd-shared
+	--enable-esd
+	--enable-esd-shared
 	--enable-nas
 	--enable-nas-shared
-	--enable-oss
+	--disable-oss
 	--enable-pulseaudio
 	--enable-pulseaudio-shared
 
 	--enable-video-dummy
 	--enable-video-opengl
-	--disable-video-opengles
+	--enable-video-opengles
 	--enable-video-x11
 	--enable-video-x11-scrnsaver
 	--enable-video-x11-xcursor
@@ -50,7 +50,7 @@ CYGCONF_ARGS="
 	--enable-video-x11-xrandr
 	--enable-video-x11-xshape
 	--disable-video-x11-vm
-	--disable-x11-shared
+	--enable-x11-shared
 "
 
 DOCS="README-SDL.txt README-porting.txt"

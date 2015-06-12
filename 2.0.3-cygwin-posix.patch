@@ -1,5 +1,5 @@
---- origsrc/SDL2-2.0.0/configure.in	2013-08-11 21:57:54.000000000 -0500
-+++ src/SDL2-2.0.0/configure.in	2013-08-13 14:10:06.841632700 -0500
+--- origsrc/SDL2-2.0.3/configure.in	2015-06-11 21:49:52.209555000 -0500
++++ src/SDL2-2.0.3/configure.in	2015-06-11 21:50:07.969556300 -0500
 @@ -79,29 +79,6 @@ elif test -d .hg; then
  fi
  BASE_CFLAGS=""
@@ -30,7 +30,7 @@
  # Uncomment the following line if you want to force SDL and applications
  # built with it to be compiled for a particular architecture.
  #AX_GCC_ARCHFLAG([no], [BASE_CFLAGS="$BASE_CFLAGS $ax_cv_gcc_archflag]")
-@@ -237,7 +214,7 @@ if test x$enable_libc = xyes; then
+@@ -244,7 +221,7 @@ if test x$enable_libc = xyes; then
  
      dnl Checks for library functions.
      case "$host" in
@@ -39,16 +39,16 @@
          ;;
      *)
          AC_FUNC_ALLOCA
-@@ -2331,7 +2310,7 @@ AC_HELP_STRING([--enable-rpath], [use an
+@@ -2624,7 +2601,7 @@ AC_HELP_STRING([--enable-rpath], [use an
  
  dnl Set up the configuration based on the host platform!
  case "$host" in
 -    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
 +    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-cygwin*)
          case "$host" in
-             *-*-linux*)         ARCH=linux ;;
-             *-*-uclinux*)       ARCH=linux ;;
-@@ -2349,6 +2328,7 @@ case "$host" in
+             *-raspberry-linux*)
+                 # Raspberry Pi
+@@ -2656,6 +2633,7 @@ case "$host" in
              *-*-hpux*)          ARCH=hpux ;;
              *-*-aix*)           ARCH=aix ;;
              *-*-minix*)         ARCH=minix ;;
@@ -56,32 +56,53 @@
          esac
          CheckVisibilityHidden
          CheckDummyVideo
-@@ -2435,7 +2415,7 @@ case "$host" in
-             have_timers=yes
-         fi
+@@ -2759,7 +2737,7 @@ case "$host" in
+             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
+         fi       
          ;;
 -    *-*-cygwin* | *-*-mingw32*)
 +    *-*-mingw32*)
          ARCH=win32
          if test "$build" != "$host"; then # cross-compiling
              # Default cross-compile location
---- origsrc/SDL2-2.0.0/include/SDL_platform.h	2013-08-11 21:57:54.000000000 -0500
-+++ src/SDL2-2.0.0/include/SDL_platform.h	2013-08-13 14:16:10.963459300 -0500
-@@ -120,7 +120,11 @@
+--- origsrc/SDL2-2.0.3/include/SDL_platform.h	2014-03-15 21:31:42.000000000 -0500
++++ src/SDL2-2.0.3/include/SDL_platform.h	2015-06-11 21:50:07.976057100 -0500
+@@ -113,8 +113,12 @@
  #undef __SOLARIS__
  #define __SOLARIS__ 1
  #endif
--#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 +#if defined(__CYGWIN__)
 +#undef __CYGWIN__
 +#define __CYGWIN__ 1
 +#endif
+ 
+-#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 +#if defined(WIN32) || defined(_WIN32)
+ /* Try to find out if we're compiling for WinRT or non-WinRT */
+ /* If _USING_V110_SDK71_ is defined it means we are using the v110_xp or v120_xp toolset. */
+ #if defined(__MINGW32__) || (defined(_MSC_VER) && (_MSC_VER >= 1700) && !_USING_V110_SDK71_)	/* _MSC_VER==1700 for MSVC 2012 */
+@@ -131,7 +135,7 @@
  #undef __WINDOWS__
  #define __WINDOWS__   1
+ #endif /* _MSC_VER < 1700 */
+-#endif /* defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) */
++#endif /* defined(WIN32) || defined(_WIN32) */
+ 
+ #if defined(__WINDOWS__)
+ #undef __WIN32__
+--- origsrc/SDL2-2.0.3/src/dynapi/SDL_dynapi.c	2014-03-15 21:31:44.000000000 -0500
++++ src/SDL2-2.0.3/src/dynapi/SDL_dynapi.c	2015-06-12 00:19:47.269282500 -0500
+@@ -198,7 +198,7 @@ SDL_DYNAPI_entry(Uint32 apiver, void *ta
+ 
+ /* Obviously we can't use SDL_LoadObject() to load SDL.  :)  */
+ /* Also obviously, we never close the loaded library. */
+-#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
++#if defined(WIN32) || defined(_WIN32)
+ #ifndef WIN32_LEAN_AND_MEAN
+ #define WIN32_LEAN_AND_MEAN 1
  #endif
---- origsrc/SDL2-2.0.0/test/configure.in	2013-08-11 21:57:54.000000000 -0500
-+++ src/SDL2-2.0.0/test/configure.in	2013-08-13 12:17:41.186231200 -0500
+--- origsrc/SDL2-2.0.3/test/configure.in	2014-03-15 21:31:44.000000000 -0500
++++ src/SDL2-2.0.3/test/configure.in	2015-06-11 21:50:07.980557700 -0500
 @@ -22,7 +22,13 @@ ISMACOSX="false"
  
  dnl Figure out which math library to use
