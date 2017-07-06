@@ -1,0 +1,48 @@
+--- origsrc/SDL2-2.0.5/src/audio/winmm/SDL_winmm.c	2016-10-19 22:56:26.000000000 -0500
++++ src/SDL2-2.0.5/src/audio/winmm/SDL_winmm.c	2017-07-05 22:09:15.649844700 -0500
+@@ -24,6 +24,10 @@
+ 
+ /* Allow access to a raw mixing buffer */
+ 
++#ifdef __CYGWIN__
++#define UNICODE 1
++#include "../../core/windows/SDL_windows.c"
++#endif
+ #include "../../core/windows/SDL_windows.h"
+ #include <mmsystem.h>
+ 
+--- origsrc/SDL2-2.0.5/src/core/windows/SDL_windows.c	2016-10-19 22:56:26.000000000 -0500
++++ src/SDL2-2.0.5/src/core/windows/SDL_windows.c	2017-07-05 22:06:36.058464600 -0500
+@@ -20,12 +20,14 @@
+ */
+ #include "../../SDL_internal.h"
+ 
+-#if defined(__WIN32__) || defined(__WINRT__)
++#if defined(__WIN32__) || defined(__WINRT__) || defined(__CYGWIN__)
+ 
+ #include "SDL_windows.h"
+ #include "SDL_error.h"
+ #include "SDL_assert.h"
+ 
++#if !defined(__CYGWIN__)
++
+ #include <objbase.h>  /* for CoInitialize/CoUninitialize (Win32 only) */
+ 
+ #ifndef _WIN32_WINNT_VISTA
+@@ -124,6 +126,8 @@ BOOL WIN_IsWindowsVistaOrGreater()
+ #endif
+ }
+ 
++#endif /* !__CYGWIN__ */
++
+ /*
+ WAVExxxCAPS gives you 31 bytes for the device name, and just truncates if it's
+ longer. However, since WinXP, you can use the WAVExxxCAPS2 structure, which
+@@ -202,6 +206,6 @@ WIN_LookupAudioDeviceName(const WCHAR *n
+ #endif /* if __WINRT__ / else */
+ }
+ 
+-#endif /* __WIN32__ || __WINRT__ */
++#endif /* __WIN32__ || __WINRT__ || __CYGWIN__ */
+ 
+ /* vi: set ts=4 sw=4 expandtab: */

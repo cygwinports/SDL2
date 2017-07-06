@@ -9,28 +9,25 @@
  
              AC_DEFINE(SDL_AUDIO_DRIVER_ESD, 1, [ ])
              SOURCES="$SOURCES $srcdir/src/audio/esd/*.c"
-@@ -840,7 +840,8 @@ AC_HELP_STRING([--enable-pulseaudio], [u
+@@ -840,7 +840,7 @@ AC_HELP_STRING([--enable-pulseaudio], [u
              AC_ARG_ENABLE(pulseaudio-shared,
  AC_HELP_STRING([--enable-pulseaudio-shared], [dynamically load PulseAudio support [[default=yes]]]),
                            , enable_pulseaudio_shared=yes)
 -            pulseaudio_lib=[`find_lib "libpulse-simple.so.*" "$PULSEAUDIO_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
 +            pulseaudio_lib=cygpulse-0.dll
-+            pulsesimple_lib=cygpulse-simple-0.dll
  
              AC_DEFINE(SDL_AUDIO_DRIVER_PULSEAUDIO, 1, [ ])
              SOURCES="$SOURCES $srcdir/src/audio/pulseaudio/*.c"
-@@ -851,8 +852,9 @@ AC_HELP_STRING([--enable-pulseaudio-shar
+@@ -851,7 +851,7 @@ AC_HELP_STRING([--enable-pulseaudio-shar
              fi
              if test x$have_loadso = xyes && \
                 test x$enable_pulseaudio_shared = xyes && test x$pulseaudio_lib != x; then
 -                echo "-- dynamic libpulse-simple -> $pulseaudio_lib"
-+                echo "-- dynamic libpulse -> $pulseaudio_lib,$pulsesimple_lib"
++                echo "-- dynamic libpulse -> $pulseaudio_lib"
                  AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC, "$pulseaudio_lib", [ ])
-+                AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_PULSESIMPLE_DYNAMIC, "$pulsesimple_lib", [ ])
                  SUMMARY_audio="${SUMMARY_audio} pulse(dynamic)"
  
-                 case "$host" in
-@@ -954,7 +956,7 @@ AC_HELP_STRING([--enable-nas], [support
+@@ -954,7 +954,7 @@ AC_HELP_STRING([--enable-nas], [support
              AC_ARG_ENABLE(nas-shared,
  AC_HELP_STRING([--enable-nas-shared], [dynamically load NAS audio support [[default=yes]]]),
                            , enable_nas_shared=yes)
@@ -39,7 +36,7 @@
  
              if test x$have_loadso != xyes && \
                 test x$enable_nas_shared = xyes; then
-@@ -1333,6 +1335,16 @@ AC_HELP_STRING([--enable-x11-shared], [d
+@@ -1333,6 +1333,16 @@ AC_HELP_STRING([--enable-x11-shared], [d
                      xss_lib='libXss.so'
                      xvidmode_lib='libXxf86vm.so'
                      ;;
@@ -56,7 +53,7 @@
                  *)
                      x11_lib=[`find_lib "libX11.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                      x11ext_lib=[`find_lib "libXext.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
-@@ -2667,6 +2679,12 @@ case "$host" in
+@@ -2667,6 +2677,12 @@ case "$host" in
          # Set up files for the audio library
          if test x$enable_audio = xyes; then
            case $ARCH in
@@ -69,7 +66,7 @@
              sysv5|solaris|hpux)
                  AC_DEFINE(SDL_AUDIO_DRIVER_SUNAUDIO, 1, [ ])
                  SOURCES="$SOURCES $srcdir/src/audio/sun/*.c"
-@@ -2687,6 +2705,12 @@ case "$host" in
+@@ -2687,6 +2703,12 @@ case "$host" in
          # Set up files for the joystick library
          if test x$enable_joystick = xyes; then
            case $ARCH in
@@ -82,87 +79,6 @@
              linux)
                  AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                  SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
---- origsrc/SDL2-2.0.3/include/SDL_config.h.in	2014-03-15 21:31:42.000000000 -0500
-+++ src/SDL2-2.0.3/include/SDL_config.h.in	2015-06-11 21:51:05.219826100 -0500
-@@ -196,6 +196,7 @@
- #undef SDL_AUDIO_DRIVER_ARTS_DYNAMIC
- #undef SDL_AUDIO_DRIVER_PULSEAUDIO
- #undef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
-+#undef SDL_AUDIO_DRIVER_PULSESIMPLE_DYNAMIC
- #undef SDL_AUDIO_DRIVER_HAIKU
- #undef SDL_AUDIO_DRIVER_BSD
- #undef SDL_AUDIO_DRIVER_COREAUDIO
---- origsrc/SDL2-2.0.3/src/audio/pulseaudio/SDL_pulseaudio.c	2014-03-15 21:31:44.000000000 -0500
-+++ src/SDL2-2.0.3/src/audio/pulseaudio/SDL_pulseaudio.c	2015-06-11 21:51:05.225326800 -0500
-@@ -110,7 +110,9 @@ static int load_pulseaudio_syms(void);
- #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
- 
- static const char *pulseaudio_library = SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC;
-+static const char *pulsesimple_library = SDL_AUDIO_DRIVER_PULSESIMPLE_DYNAMIC;
- static void *pulseaudio_handle = NULL;
-+static void *pulsesimple_handle = NULL;
- 
- static int
- load_pulseaudio_sym(const char *fn, void **addr)
-@@ -124,14 +126,29 @@ load_pulseaudio_sym(const char *fn, void
-     return 1;
- }
- 
-+static int
-+load_pulsesimple_sym(const char *fn, void **addr)
-+{
-+    *addr = SDL_LoadFunction(pulsesimple_handle, fn);
-+    if (*addr == NULL) {
-+        /* Don't call SDL_SetError(): SDL_LoadFunction already did. */
-+        return 0;
-+    }
-+
-+    return 1;
-+}
-+
- /* cast funcs to char* first, to please GCC's strict aliasing rules. */
- #define SDL_PULSEAUDIO_SYM(x) \
-     if (!load_pulseaudio_sym(#x, (void **) (char *) &PULSEAUDIO_##x)) return -1
-+#define SDL_PULSESIMPLE_SYM(x) \
-+    if (!load_pulsesimple_sym(#x, (void **) (char *) &PULSEAUDIO_##x)) return -1
- 
- static void
- UnloadPulseAudioLibrary(void)
- {
-     if (pulseaudio_handle != NULL) {
-+        SDL_UnloadObject(pulsesimple_handle);
-         SDL_UnloadObject(pulseaudio_handle);
-         pulseaudio_handle = NULL;
-     }
-@@ -143,7 +160,8 @@ LoadPulseAudioLibrary(void)
-     int retval = 0;
-     if (pulseaudio_handle == NULL) {
-         pulseaudio_handle = SDL_LoadObject(pulseaudio_library);
--        if (pulseaudio_handle == NULL) {
-+        pulsesimple_handle = SDL_LoadObject(pulsesimple_library);
-+        if (pulseaudio_handle == NULL || pulsesimple_handle == NULL) {
-             retval = -1;
-             /* Don't call SDL_SetError(): SDL_LoadObject already did. */
-         } else {
-@@ -159,6 +177,7 @@ LoadPulseAudioLibrary(void)
- #else
- 
- #define SDL_PULSEAUDIO_SYM(x) PULSEAUDIO_##x = x
-+#define SDL_PULSESIMPLE_SYM(x) PULSEAUDIO_##x = x
- 
- static void
- UnloadPulseAudioLibrary(void)
-@@ -179,8 +198,8 @@ static int
- load_pulseaudio_syms(void)
- {
-     SDL_PULSEAUDIO_SYM(pa_get_library_version);
--    SDL_PULSEAUDIO_SYM(pa_simple_new);
--    SDL_PULSEAUDIO_SYM(pa_simple_free);
-+    SDL_PULSESIMPLE_SYM(pa_simple_new);
-+    SDL_PULSESIMPLE_SYM(pa_simple_free);
-     SDL_PULSEAUDIO_SYM(pa_mainloop_new);
-     SDL_PULSEAUDIO_SYM(pa_mainloop_get_api);
-     SDL_PULSEAUDIO_SYM(pa_mainloop_iterate);
 --- origsrc/SDL2-2.0.3/src/video/SDL_egl.c	2014-03-15 21:31:44.000000000 -0500
 +++ src/SDL2-2.0.3/src/video/SDL_egl.c	2015-06-12 00:32:16.812962500 -0500
 @@ -48,6 +48,14 @@
@@ -191,11 +107,11 @@
  #else
  #define DEFAULT_OPENGL  "libGL.so.1"
  #endif
---- origsrc/SDL2-2.0.3/src/video/x11/SDL_x11video.c	2014-03-15 21:31:44.000000000 -0500
-+++ src/SDL2-2.0.3/src/video/x11/SDL_x11video.c	2015-06-11 21:51:05.235828200 -0500
+--- origsrc/SDL2-2.0.5/src/core/linux/SDL_dbus.c	2014-03-15 21:31:44.000000000 -0500
++++ src/SDL2-2.0.5/src/core/linux/SDL_dbus.c	2015-06-11 21:51:05.235828200 -0500
 @@ -41,9 +41,14 @@
+ #include "SDL_dbus.h"
  
- /* !!! FIXME: move dbus stuff to somewhere under src/core/linux ... */
  #if SDL_USE_LIBDBUS
 +#ifdef __CYGWIN__
 +#define LIBDBUS_SONAME  "cygdbus-1-3.dll"
@@ -208,4 +124,4 @@
 +static const char *dbus_library = LIBDBUS_SONAME;
  static void *dbus_handle = NULL;
  static unsigned int screensaver_cookie = 0;
- 
+ static SDL_DBusContext dbus;
