@@ -1,6 +1,6 @@
---- origsrc/SDL2-2.0.3/configure.in	2015-06-11 21:50:54.491963900 -0500
-+++ src/SDL2-2.0.3/configure.in	2015-06-11 21:51:05.212825200 -0500
-@@ -791,7 +791,7 @@ AC_HELP_STRING([--enable-esd], [support
+--- origsrc/SDL2-2.0.7/configure.in	2017-12-07 23:36:41.414213900 -0600
++++ src/SDL2-2.0.7/configure.in	2017-12-07 23:36:57.866171000 -0600
+@@ -888,7 +888,7 @@ AC_HELP_STRING([--enable-esd], [support
              AC_ARG_ENABLE(esd-shared,
  AC_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [[default=yes]]]),
                            , enable_esd_shared=yes)
@@ -9,7 +9,7 @@
  
              AC_DEFINE(SDL_AUDIO_DRIVER_ESD, 1, [ ])
              SOURCES="$SOURCES $srcdir/src/audio/esd/*.c"
-@@ -840,7 +840,7 @@ AC_HELP_STRING([--enable-pulseaudio], [u
+@@ -937,7 +937,7 @@ AC_HELP_STRING([--enable-pulseaudio], [u
              AC_ARG_ENABLE(pulseaudio-shared,
  AC_HELP_STRING([--enable-pulseaudio-shared], [dynamically load PulseAudio support [[default=yes]]]),
                            , enable_pulseaudio_shared=yes)
@@ -18,7 +18,7 @@
  
              AC_DEFINE(SDL_AUDIO_DRIVER_PULSEAUDIO, 1, [ ])
              SOURCES="$SOURCES $srcdir/src/audio/pulseaudio/*.c"
-@@ -851,7 +851,7 @@ AC_HELP_STRING([--enable-pulseaudio-shar
+@@ -948,7 +948,7 @@ AC_HELP_STRING([--enable-pulseaudio-shar
              fi
              if test x$have_loadso = xyes && \
                 test x$enable_pulseaudio_shared = xyes && test x$pulseaudio_lib != x; then
@@ -27,7 +27,16 @@
                  AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC, "$pulseaudio_lib", [ ])
                  SUMMARY_audio="${SUMMARY_audio} pulse(dynamic)"
  
-@@ -954,7 +954,7 @@ AC_HELP_STRING([--enable-nas], [support
+@@ -997,7 +997,7 @@ AC_HELP_STRING([--enable-arts], [support
+                 AC_ARG_ENABLE(arts-shared,
+ AC_HELP_STRING([--enable-arts-shared], [dynamically load aRts audio support [[default=yes]]]),
+                               , enable_arts_shared=yes)
+-                arts_lib=[`find_lib "libartsc.so.*" "$ARTS_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
++                arts_lib=cygartsc-0.dll
+ 
+                 AC_DEFINE(SDL_AUDIO_DRIVER_ARTS, 1, [ ])
+                 SOURCES="$SOURCES $srcdir/src/audio/arts/*.c"
+@@ -1051,7 +1051,7 @@ AC_HELP_STRING([--enable-nas], [support
              AC_ARG_ENABLE(nas-shared,
  AC_HELP_STRING([--enable-nas-shared], [dynamically load NAS audio support [[default=yes]]]),
                            , enable_nas_shared=yes)
@@ -36,7 +45,16 @@
  
              if test x$have_loadso != xyes && \
                 test x$enable_nas_shared = xyes; then
-@@ -1333,6 +1333,16 @@ AC_HELP_STRING([--enable-x11-shared], [d
+@@ -1218,7 +1218,7 @@ AC_HELP_STRING([--enable-libsamplerate],
+ AC_HELP_STRING([--enable-libsamplerate-shared], [dynamically load libsamplerate [[default=yes]]]),
+                           , enable_libsamplerate_shared=yes)
+ 
+-            samplerate_lib=[`find_lib "libsamplerate.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
++            samplerate_lib=cygsamplerate-0.dll
+ 
+             if test x$have_loadso != xyes && \
+                test x$enable_libsamplerate_shared = xyes; then
+@@ -1630,6 +1630,16 @@ AC_HELP_STRING([--enable-x11-shared], [d
                      xss_lib='libXss.so'
                      xvidmode_lib='libXxf86vm.so'
                      ;;
@@ -53,7 +71,7 @@
                  *)
                      x11_lib=[`find_lib "libX11.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
                      x11ext_lib=[`find_lib "libXext.so.*" "$X_LIBS -L/usr/X11/$base_libdir -L/usr/X11R6/$base_libdir" | sed 's/.*\/\(.*\)/\1/; q'`]
-@@ -2667,6 +2677,12 @@ case "$host" in
+@@ -3306,6 +3316,12 @@ case "$host" in
          # Set up files for the audio library
          if test x$enable_audio = xyes; then
            case $ARCH in
@@ -66,7 +84,7 @@
              sysv5|solaris|hpux)
                  AC_DEFINE(SDL_AUDIO_DRIVER_SUNAUDIO, 1, [ ])
                  SOURCES="$SOURCES $srcdir/src/audio/sun/*.c"
-@@ -2687,6 +2703,12 @@ case "$host" in
+@@ -3338,6 +3354,12 @@ case "$host" in
          # Set up files for the joystick library
          if test x$enable_joystick = xyes; then
            case $ARCH in
@@ -79,37 +97,9 @@
              linux)
                  AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                  SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
---- origsrc/SDL2-2.0.3/src/video/SDL_egl.c	2014-03-15 21:31:44.000000000 -0500
-+++ src/SDL2-2.0.3/src/video/SDL_egl.c	2015-06-12 00:32:16.812962500 -0500
-@@ -48,6 +48,14 @@
- #define DEFAULT_OGL_ES_PVR "libGLES_CM.dll"
- #define DEFAULT_OGL_ES "libGLESv1_CM.dll"
- 
-+#elif defined(__CYGWIN__)
-+/* Cygwin */
-+#define DEFAULT_OGL "cygGL-1.dll"
-+#define DEFAULT_EGL "cygEGL-1.dll"
-+#define DEFAULT_OGL_ES2 "cygGLESv2-2.dll"
-+#define DEFAULT_OGL_ES_PVR "cygGLES_CM-1.dll"
-+#define DEFAULT_OGL_ES "cygGLESv1_CM-1.dll"
-+
- #else
- /* Desktop Linux */
- #define DEFAULT_OGL "libGL.so.1"
---- origsrc/SDL2-2.0.3/src/video/x11/SDL_x11opengl.c	2014-03-15 21:31:44.000000000 -0500
-+++ src/SDL2-2.0.3/src/video/x11/SDL_x11opengl.c	2015-06-11 21:51:05.230827500 -0500
-@@ -38,6 +38,8 @@
- #define DEFAULT_OPENGL  "/usr/X11R6/lib/libGL.1.dylib"
- #elif defined(__QNXNTO__)
- #define DEFAULT_OPENGL  "libGL.so.3"
-+#elif defined(__CYGWIN__)
-+#define DEFAULT_OPENGL  "cygGL-1.dll"
- #else
- #define DEFAULT_OPENGL  "libGL.so.1"
- #endif
---- origsrc/SDL2-2.0.5/src/core/linux/SDL_dbus.c	2014-03-15 21:31:44.000000000 -0500
-+++ src/SDL2-2.0.5/src/core/linux/SDL_dbus.c	2015-06-11 21:51:05.235828200 -0500
-@@ -41,9 +41,14 @@
+--- origsrc/SDL2-2.0.7/src/core/linux/SDL_dbus.c	2017-10-23 14:27:46.000000000 -0500
++++ src/SDL2-2.0.7/src/core/linux/SDL_dbus.c	2017-12-07 23:36:57.881790200 -0600
+@@ -22,9 +22,14 @@
  #include "SDL_dbus.h"
  
  #if SDL_USE_LIBDBUS
@@ -125,3 +115,31 @@
  static void *dbus_handle = NULL;
  static unsigned int screensaver_cookie = 0;
  static SDL_DBusContext dbus;
+--- origsrc/SDL2-2.0.7/src/video/SDL_egl.c	2017-10-23 14:27:47.000000000 -0500
++++ src/SDL2-2.0.7/src/video/SDL_egl.c	2017-12-07 23:36:57.881790200 -0600
+@@ -65,6 +65,14 @@
+ #define DEFAULT_OGL_ES_PVR "libGLES_CM.dll"
+ #define DEFAULT_OGL_ES "libGLESv1_CM.dll"
+ 
++#elif defined(__CYGWIN__)
++/* Cygwin */
++#define DEFAULT_OGL "cygGL-1.dll"
++#define DEFAULT_EGL "cygEGL-1.dll"
++#define DEFAULT_OGL_ES2 "cygGLESv2-2.dll"
++#define DEFAULT_OGL_ES_PVR "cygGLES_CM-1.dll"
++#define DEFAULT_OGL_ES "cygGLESv1_CM-1.dll"
++
+ #else
+ /* Desktop Linux */
+ #define DEFAULT_OGL "libGL.so.1"
+--- origsrc/SDL2-2.0.7/src/video/x11/SDL_x11opengl.c	2017-10-23 14:27:47.000000000 -0500
++++ src/SDL2-2.0.7/src/video/x11/SDL_x11opengl.c	2017-12-07 23:36:57.881790200 -0600
+@@ -39,6 +39,8 @@
+ #define DEFAULT_OPENGL  "/usr/X11R6/lib/libGL.1.dylib"
+ #elif defined(__QNXNTO__)
+ #define DEFAULT_OPENGL  "libGL.so.3"
++#elif defined(__CYGWIN__)
++#define DEFAULT_OPENGL  "cygGL-1.dll"
+ #else
+ #define DEFAULT_OPENGL  "libGL.so.1"
+ #endif
